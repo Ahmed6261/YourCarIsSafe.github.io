@@ -1,119 +1,85 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Car is Safe</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 100%;
-      max-width: 400px;
-    }
-    input[type="text"], input[type="password"], textarea, input[type="file"] {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      background-color: #0284c7;
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0369a1;
-    }
-    .result {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    .contact-info {
-      margin-top: 1rem;
-      color: #0f172a;
-    }
-    .admin-panel {
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid #ccc;
-      display: none;
-    }
-    img.uploaded-img {
-      width: 100%;
-      margin-top: 1rem;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Your Car is Safe</h1>
-    <p>اكتب رقم اللوحة أو رقم الشاسيه للتحقق</p>
-    <input type="text" id="searchInput" placeholder="رقم اللوحة أو الشاسيه" />
-    <button onclick="searchCar()">بحث</button>
-    <div class="result" id="result"></div>
-    <div class="contact-info" id="contactInfo"></div>
-    <div id="carImage"></div>
+<script>
+  const demoDB = {
+    "123ABC": { message: "العربة موجودة - اتصل بنا لاستلام الموقع.", image: null },
+    "456DEF": { message: "تم تسليم هذه العربة لصاحبها.", image: null }
+  };
 
-    <div style="margin-top:2rem">
-      <h3>🛡️ دخول المسؤول</h3>
-      <input type="password" id="adminPass" placeholder="كلمة المرور" />
-      <button onclick="loginAdmin()">دخول</button>
-    </div>
+  let isAdmin = false;
 
-    <div class="admin-panel" id="adminPanel">
-      <h3>📥 لوحة تحكم المسؤول</h3>
-      <p>أضف رقم جديد (شاسيه أو لوحة):</p>
-      <input type="text" id="newKey" placeholder="أدخل الرقم الجديد" />
-      <textarea id="newMessage" placeholder="أدخل الرسالة الخاصة لهذا الرقم"></textarea>
-      <input type="file" id="newImage" accept="image/*" />
-      <button onclick="addNewEntry()">إضافة</button>
+  function searchCar() {
+    const input = document.getElementById("searchInput").value.trim();
+    const result = document.getElementById("result");
+    const contact = document.getElementById("contactInfo");
+    const carImage = document.getElementById("carImage");
+    carImage.innerHTML = "";
 
-      <p style="margin-top:1rem;">📷 يمكنك أيضًا إرسال صور السيارة عبر واتساب.</p>
-    </div>
-  </div>
+    if (!input) {
+      result.textContent = "الرجاء إدخال رقم صحيح.";
+      result.style.color = "#dc2626";
+      contact.textContent = "";
+      return;
+    }
 
-  <script>
-    const demoDB = {
-      "123ABC": { message: "العربة موجودة - اتصل بنا لاستلام الموقع.", image: null },
-      "456DEF": { message: "تم تسليم هذه العربة لصاحبها.", image: null }
-    };
-
-    function searchCar() {
-      const input = document.getElementById("searchInput").value.trim();
-      const result = document.getElementById("result");
-      const contact = document.getElementById("contactInfo");
-      const carImage = document.getElementById("carImage");
-      carImage.innerHTML = "";
-
-      if (!input) {
-        result.textContent = "الرجاء إدخال رقم صحيح.";
-        result.style.color = "#dc2626";
-        contact.textContent = "";
-        return;
+    if (demoDB[input]) {
+      result.textContent = demoDB[input].message;
+      result.style.color = "#16a34a";
+      contact.textContent = "📞 للتواصل فقط إذا كانت هذه عربتك: 0129271559";
+      if (demoDB[input].image) {
+        const img = document.createElement("img");
+        img.src = demoDB[input].image;
+        img.alt = "صورة السيارة";
+        img.className = "uploaded-img";
+        carImage.appendChild(img);
       }
+    } else {
+      result.textContent = "لا توجد نتائج لهذا الرقم حالياً.";
+      result.style.color = "#dc2626";
+      contact.textContent = "";
+    }
+  }
 
-      if (demoDB[input]) {
-        result.textContent = demoDB[input].message;
-        result.style.color = "#16a34a";
-        contact.textContent = "📞 للتواصل فقط إذا كانت هذه عربتك: 0129271559";
-        if (demoDB[input].image) {
-          const img = document.cre
+  function loginAdmin() {
+    const pass = document.getElementById("adminPass").value;
+    const adminPanel = document.getElementById("adminPanel");
+    if (pass === "1234") {  // ←←←← كلمة المرور الجديدة
+      adminPanel.style.display = "block";
+      isAdmin = true;
+      alert("✅ تم الدخول كمسؤول.");
+    } else {
+      alert("❌ كلمة المرور غير صحيحة.");
+    }
+  }
+
+  function addNewEntry() {
+    if (!isAdmin) {
+      alert("يجب الدخول كمسؤول أولاً.");
+      return;
+    }
+
+    const key = document.getElementById("newKey").value.trim();
+    const message = document.getElementById("newMessage").value.trim();
+    const fileInput = document.getElementById("newImage");
+    const file = fileInput.files[0];
+
+    if (!key || !message) {
+      alert("الرجاء ملء جميع الحقول.");
+      return;
+    }
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        demoDB[key] = { message: message, image: e.target.result };
+        alert("تمت إضافة الرقم والصورة بنجاح!");
+      };
+      reader.readAsDataURL(file);
+    } else {
+      demoDB[key] = { message: message, image: null };
+      alert("تمت إضافة الرقم بدون صورة.");
+    }
+
+    document.getElementById("newKey").value = "";
+    document.getElementById("newMessage").value = "";
+    fileInput.value = "";
+  }
+</script>
