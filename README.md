@@ -1,1 +1,93 @@
 # Ahmed6261.github.io
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Car is Safe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 {
+      margin-bottom: 1rem;
+      color: #0f172a;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #0284c7;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0369a1;
+    }
+    .result {
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #16a34a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Your Car is Safe</h1>
+    <p>اكتب رقم اللوحة أو رقم الشاسيه للتحقق</p>
+    <input type="text" id="searchInput" placeholder="رقم اللوحة أو الشاسيه" />
+    <button onclick="searchCar()">بحث</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function searchCar() {
+      const input = document.getElementById("searchInput").value.trim();
+      const result = document.getElementById("result");
+
+      if (!input) {
+        result.textContent = "الرجاء إدخال رقم صحيح.";
+        result.style.color = "#dc2626";
+        return;
+      }
+
+      // Demo only – replace this with real data lookup from your server
+      const demoDB = {
+        "123ABC": "العربة موجودة - اتصل بنا لاستلام الموقع.",
+        "456DEF": "تم تسليم هذه العربة لصاحبها.",
+      };
+
+      if (demoDB[input]) {
+        result.textContent = demoDB[input];
+        result.style.color = "#16a34a";
+      } else {
+        result.textContent = "لا توجد نتائج لهذا الرقم حاليًا.";
+        result.style.color = "#dc2626";
+      }
+    }
+  </script>
+</body>
+</html>
