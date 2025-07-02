@@ -1,0 +1,16 @@
+{
+  "name": "lost-cars-listing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mobile-first website to list and search lost cars by license plate or chassis number. Admin controlled, privacy-first.",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "tailwindcss": "^3.4.1"
+  }
+}
