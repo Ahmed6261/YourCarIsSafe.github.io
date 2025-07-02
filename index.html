@@ -1,179 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Car is Safe</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: white;
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 100%;
-      max-width: 400px;
-    }
-    input[type="text"], input[type="password"], textarea, input[type="file"] {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      background-color: #0284c7;
-      color: white;
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0369a1;
-    }
-    .result {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    .contact-info {
-      margin-top: 1rem;
-      color: #0f172a;
-    }
-    .admin-panel {
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid #ccc;
-      display: none;
-    }
-    img.uploaded-img {
-      width: 100%;
-      margin-top: 1rem;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Your Car is Safe</h1>
-    <p>اكتب رقم اللوحة أو رقم الشاسيه للتحقق</p>
-    <input type="text" id="searchInput" placeholder="رقم اللوحة أو الشاسيه" />
-    <button onclick="searchCar()">بحث</button>
-    <div class="result" id="result"></div>
-    <div class="contact-info" id="contactInfo"></div>
-    <div id="carImage"></div>
+// Basic Express server for Lost Cars project
+const express = require('express');
+const mongoose = require('mongoose');
+const multer = require('multer');
+const cors = require('cors');
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-    <div style="margin-top:2rem">
-      <h3>🛡️ دخول المسؤول</h3>
-      <input type="123400" id="adminPass" placeholder="١٢٣٤٠٠" />
-      <button onclick="loginAdmin()">دخول</button>
+// MongoDB Connection
+mongoose.connect('mongodb://localhost:27017/lostcars', { useNewUrlParser: true, useUnifiedTopology: true });
+const Car = mongoose.model('Car', new mongoose.Schema({
+  plate: String,
+  chassis: String,
+  images: [String],
+  found: { type: Boolean, default: false }
+}));
+
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+
+// Multer config for image upload
+const upload = multer({ dest: 'uploads/' });
+
+// Admin: Add missing car (with images/chassis)
+app.post('/api/admin/add', upload.array('images'), async (req, res) => {
+  const { plate, chassis } = req.body;
+  const images = req.files.map(f => f.path);
+  if (!chassis) return res.status(400).json({ error: "Chassis number required" });
+  const car = new Car({ plate, chassis, images });
+  await car.save();
+  res.json({ success: true, car });
+});
+
+// Public: Search for car by plate or chassis
+app.post('/api/search', async (req, res) => {
+  const { plate, chassis } = req.body;
+  let car = null;
+  if (plate) car = await Car.findOne({ plate, found: false });
+  if (!car && chassis) car = await Car.findOne({ chassis, found: false });
+  if (car) {
+    // Notify owner (simulate with console - replace with SMS later)
+    console.log("Car found! Notify owner at 0129271559");
+    res.json({ found: true, message: "تم العثور على السيارة! سيتم التواصل مع صاحبها." });
+  } else {
+    res.json({ found: false, message: "لم يتم العثور على السيارة." });
+  }
+});
+
+// Admin: Mark car as found (future enhancement)
+app.post('/api/admin/found', async (req, res) => {
+  const { chassis } = req.body;
+  const car = await Car.findOneAndUpdate({ chassis }, { found: true });
+  if (car) return res.json({ success: true });
+  res.status(404).json({ error: "Car not found" });
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+import React, { useState } from "react";
+import axios from "axios";
+
+function App() {
+  // Search state
+  const [plate, setPlate] = useState("");
+  const [chassis, setChassis] = useState("");
+  const [result, setResult] = useState("");
+
+  // Admin state
+  const [adminChassis, setAdminChassis] = useState("");
+  const [adminPlate, setAdminPlate] = useState("");
+  const [adminImages, setAdminImages] = useState([]);
+  const [adminMsg, setAdminMsg] = useState("");
+
+  // Search for missing car
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    const res = await axios.post("http://localhost:5000/api/search", { plate, chassis });
+    setResult(res.data.message);
+  };
+
+  // Admin add car
+  const handleAdminAdd = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("plate", adminPlate);
+    formData.append("chassis", adminChassis);
+    for (const img of adminImages) formData.append("images", img);
+    const res = await axios.post("http://localhost:5000/api/admin/add", formData);
+    setAdminMsg(res.data.success ? "تمت الإضافة بنجاح" : "حدث خطأ");
+  };
+
+  return (
+    <div style={{padding: 24, fontFamily: 'Tajawal, Arial'}}>
+      <h2>بحث عن سيارة مفقودة</h2>
+      <form onSubmit={handleSearch}>
+        <input placeholder="رقم اللوحة" value={plate} onChange={e => setPlate(e.target.value)} />
+        <input placeholder="رقم الشاسيه" value={chassis} onChange={e => setChassis(e.target.value)} required />
+        <button type="submit">بحث</button>
+      </form>
+      {result && <div style={{margin: "16px 0", color: result.includes("تم") ? "green" : "red"}}>{result}</div>}
+
+      <hr />
+
+      <h3>إضافة سيارة مفقودة (للإدارة فقط)</h3>
+      <form onSubmit={handleAdminAdd}>
+        <input placeholder="رقم اللوحة" value={adminPlate} onChange={e => setAdminPlate(e.target.value)} />
+        <input placeholder="رقم الشاسيه" value={adminChassis} onChange={e => setAdminChassis(e.target.value)} required />
+        <input type="file" multiple accept="image/*" onChange={e => setAdminImages([...e.target.files])} />
+        <button type="submit">إضافة</button>
+      </form>
+      {adminMsg && <div style={{color: "blue"}}>{adminMsg}</div>}
+      <br/>
+      <p style={{fontSize:12, color:"#888"}}>جميع الحقوق محفوظة &copy; {new Date().getFullYear()}</p>
     </div>
-
-    <div class="admin-panel" id="adminPanel">
-      <h3>📥 لوحة تحكم المسؤول</h3>
-      <p>أضف رقم جديد (شاسيه أو لوحة):</p>
-      <input type="text" id="newKey" placeholder="أدخل الرقم الجديد" />
-      <textarea id="newMessage" placeholder="أدخل الرسالة الخاصة لهذا الرقم"></textarea>
-      <input type="file" id="newImage" accept="image/*" />
-      <button onclick="addNewEntry()">إضافة</button>
-      <p style="margin-top:1rem;">📷 يمكنك أيضًا إرسال صور السيارة عبر واتساب.</p>
-    </div>
-  </div>
-
-  <script>
-    const demoDB = {
-      "123ABC": { message: "العربة موجودة - اتصل بنا لاستلام الموقع.", image: null },
-      "456DEF": { message: "تم تسليم هذه العربة لصاحبها.", image: null }
-    };
-
-    let isAdmin = false;
-
-    function searchCar() {
-      const input = document.getElementById("searchInput").value.trim();
-      const result = document.getElementById("result");
-      const contact = document.getElementById("contactInfo");
-      const carImage = document.getElementById("carImage");
-      carImage.innerHTML = "";
-
-      if (!input) {
-        result.textContent = "الرجاء إدخال رقم صحيح.";
-        result.style.color = "#dc2626";
-        contact.textContent = "";
-        return;
-      }
-
-      if (demoDB[input]) {
-        result.textContent = demoDB[input].message;
-        result.style.color = "#16a34a";
-        contact.textContent = "📞 للتواصل فقط إذا كانت هذه عربتك: 0129271559";
-        if (demoDB[input].image) {
-          const img = document.createElement("img");
-          img.src = demoDB[input].image;
-          img.alt = "صورة السيارة";
-          img.className = "uploaded-img";
-          carImage.appendChild(img);
-        }
-      } else {
-        result.textContent = "لا توجد نتائج لهذا الرقم حالياً.";
-        result.style.color = "#dc2626";
-        contact.textContent = "";
-      }
-    }
-
-    function loginAdmin() {
-      const pass = document.getElementById("adminPass").value;
-      const adminPanel = document.getElementById("adminPanel");
-      if (pass === "1234") {
-        adminPanel.style.display = "block";
-        isAdmin = true;
-        alert("✅ تم الدخول كمسؤول.");
-      } else {
-        alert("❌ كلمة المرور غير صحيحة.");
-      }
-    }
-
-    function addNewEntry() {
-      if (!isAdmin) {
-        alert("يجب الدخول كمسؤول أولاً.");
-        return;
-      }
-
-      const key = document.getElementById("newKey").value.trim();
-      const message = document.getElementById("newMessage").value.trim();
-      const fileInput = document.getElementById("newImage");
-      const file = fileInput.files[0];
-
-      if (!key || !message) {
-        alert("الرجاء ملء جميع الحقول.");
-        return;
-      }
-
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          demoDB[key] = { message: message, image: e.target.result };
-          alert("تمت إضافة الرقم والصورة بنجاح!");
-        };
-        reader.readAsDataURL(file);
-      } else {
-        demoDB[key] = { message: message, image: null };
-        alert("تمت إضافة الرقم بدون صورة.");
-      }
-
-      document.getElementById("newKey").value = "";
-      document.getElementById("newMessage").value = "";
-      fileInput.value = "";
-    }
-  </script>
-</body>
-</html>
+  );
+}
+export default App;
