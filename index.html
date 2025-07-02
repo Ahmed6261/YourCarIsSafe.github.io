@@ -2,65 +2,24 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>البحث عن السيارات المفقودة</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: 'Cairo', Arial, sans-serif; background: #f9f9f9; margin: 0; }
-    .container { max-width: 400px; margin: 30px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001; padding: 20px; }
-    h1 { text-align: center; color: #1e90ff; }
-    input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 1em; }
-    button { background: #1e90ff; color: #fff; border: none; font-weight: bold; }
-    button:hover { background: #1971c2; }
-    .result { padding: 10px; margin-top: 10px; border-radius: 6px; font-weight: bold; }
-    .found { background: #d9fadd; color: #118c4f; }
-    .notfound { background: #ffe5e5; color: #c00; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    @media (max-width: 600px) {
-      .container { margin: 0; border-radius: 0; }
-      h1 { font-size: 1.2em; }
-    }
-  </style>
+  <title>حصر السيارات المفقودة</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>البحث عن السيارات المفقودة</h1>
-    <form id="searchForm">
-      <label>رقم اللوحة</label>
-      <input type="text" id="plate" placeholder="مثال: 1234ABC">
-      <label>رقم الشاسيه</label>
-      <input type="text" id="chassis" placeholder="مثال: WBA3A1C54DF123456">
-      <button type="submit">بحث</button>
-    </form>
-    <div id="result"></div>
-    <hr>
-    <p style="font-size: 0.9em; color: #777;">
-      إذا وجدت سيارتك تواصل على: <b style="color:#1e90ff">0129271559</b>
-    </p>
+  <h1>حصر السيارات المفقودة</h1>
+  <div id="search-section">
+    <input type="text" id="searchInput" placeholder="ابحث برقم اللوحة أو رقم الشاسيه">
+    <button onclick="searchCar()">بحث</button>
   </div>
-  <script>
-    // بيانات تجريبية (يمكنك تعديلها أو زيادتها)
-    const cars = [
-      { plate: "1234ABC", chassis: "WBA3A1C54DF123456" },
-      { plate: "5678XYZ", chassis: "JH4KA8270MC123456" }
-    ];
+  <div id="result"></div>
 
-    document.getElementById('searchForm').onsubmit = function(e) {
-      e.preventDefault();
-      const plate = document.getElementById('plate').value.trim();
-      const chassis = document.getElementById('chassis').value.trim();
-      const found = cars.find(car =>
-        (plate && car.plate === plate) ||
-        (chassis && car.chassis === chassis)
-      );
-      const resultDiv = document.getElementById('result');
-      if (found) {
-        resultDiv.innerHTML = "🚗 السيارة موجودة! تواصل مع الرقم: <b>0129271559</b>";
-        resultDiv.className = "result found";
-      } else {
-        resultDiv.innerHTML = "❌ لم يتم العثور على السيارة.";
-        resultDiv.className = "result notfound";
-      }
-    };
-  </script>
+  <h2>إضافة سيارة جديدة (خاص بك فقط عبر GitHub)</h2>
+  <p>لإضافة سيارة جديدة، عدل ملف <b>cars.json</b> من حسابك على GitHub.</p>
+  <a href="cars.json" target="_blank">فتح ملف السيارات المفقودة</a>
+
+  <footer>
+    <p>في حال العثور على السيارة، يرجى التواصل عبر الرقم: <b>0129271559</b></p>
+  </footer>
+  <script src="script.js"></script>
 </body>
 </html>
