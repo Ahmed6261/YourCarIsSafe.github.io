@@ -1,0 +1,59 @@
+import React, { useState } from "react";
+
+export default function CarForm({ onAddCar }) {
+  const [plate, setPlate] = useState("");
+  const [chassis, setChassis] = useState("");
+  const [images, setImages] = useState([]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAddCar({ plate, chassis, images });
+    setPlate("");
+    setChassis("");
+    setImages([]);
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const imgURLs = files.map((file) => URL.createObjectURL(file));
+    setImages(imgURLs);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-4">
+      <div className="mb-2">
+        <label className="block mb-1">License Plate</label>
+        <input
+          className="border rounded px-3 py-2 w-full"
+          value={plate}
+          onChange={(e) => setPlate(e.target.value)}
+          required
+        />
+      </div>
+      <div className="mb-2">
+        <label className="block mb-1">Chassis Number</label>
+        <input
+          className="border rounded px-3 py-2 w-full"
+          value={chassis}
+          onChange={(e) => setChassis(e.target.value)}
+          required
+        />
+      </div>
+      <div className="mb-2">
+        <label className="block mb-1">Car Images (private)</label>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageChange}
+        />
+      </div>
+      <button
+        type="submit"
+        className="px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Add Car
+      </button>
+    </form>
+  );
+}
