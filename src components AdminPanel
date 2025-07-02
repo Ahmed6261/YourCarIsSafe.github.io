@@ -1,0 +1,42 @@
+import React, { useState } from "react";
+import CarForm from "./CarForm";
+
+export default function AdminPanel() {
+  const [cars, setCars] = useState([]);
+  // In real use, fetch and store to a backend
+
+  const handleAddCar = (car) => {
+    setCars([car, ...cars]);
+  };
+
+  return (
+    <div>
+      <CarForm onAddCar={handleAddCar} />
+      <h2 className="text-lg font-semibold mt-6 mb-2">My Lost Cars</h2>
+      <ul>
+        {cars.map((car, idx) => (
+          <li key={idx} className="border rounded p-2 mb-2">
+            <div>
+              <strong>License Plate:</strong> {car.plate}
+            </div>
+            <div>
+              <strong>Chassis Number:</strong> {car.chassis}
+            </div>
+            <div>
+              <strong>Images:</strong>
+              {car.images &&
+                car.images.map((img, i) => (
+                  <img
+                    key={i}
+                    src={img}
+                    alt="car"
+                    className="w-24 h-16 object-cover inline-block mr-2"
+                  />
+                ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
