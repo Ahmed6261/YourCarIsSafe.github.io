@@ -1,197 +1,60 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <title>حصر السيارات المفقودة</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: 'Cairo', Arial, sans-serif; background: #f9f9f9; margin: 0; min-height: 100vh;}
-    .container { max-width: 470px; margin: 40px auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 14px #0002; padding: 22px; }
-    h1 { text-align: center; color: #1e90ff; font-size: 1.6em; margin-bottom: 20px;}
-    label { font-weight: bold; margin-top: 12px; display: block;}
-    input, button, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 1em; }
-    button { background: #1e90ff; color: #fff; border: none; font-weight: bold; cursor: pointer;}
-    button:hover { background: #1971c2;}
-    .result { padding: 10px; margin-top: 10px; border-radius: 6px; font-weight: bold;}
-    .found { background: #d9fadd; color: #118c4f;}
-    .notfound { background: #ffe5e5; color: #c00;}
-    .car-img { max-width: 90px; max-height: 70px; border-radius: 8px; margin: 7px 3px 7px 0; display:inline-block; vertical-align:middle;}
-    .admin-panel { margin-top: 30px;}
-    .car-list { margin-top: 18px;}
-    .car-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; align-items: center;}
-    .car-info { flex: 1;}
-    .actions { margin-right: 8px;}
-    .stat { font-size: 0.95em; color: #888; margin-bottom: 8px;}
-    .hidden { display: none;}
-    .msg { text-align:center; margin-top:7px;}
-    .logout-btn { float: left; background:#e74c3c;}
-    @media (max-width: 600px) {
-      .container { margin: 0; border-radius: 0; }
-      h1 { font-size: 1.1em; }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>حصر السيارات المفقودة</h1>
-    <form id="searchForm">
-      <label>رقم اللوحة</label>
-      <input type="text" id="plate" placeholder="مثال: 1234ABC">
-      <label>رقم الشاسيه</label>
-      <input type="text" id="chassis" placeholder="مثال: WBA3A1C54DF123456">
-      <button type="submit">بحث</button>
-    </form>
-    <div id="result"></div>
-    <hr>
-    <p style="font-size: 0.93em; color: #777;">
-      إذا وجدت سيارتك تواصل على: <b style="color:#1e90ff">0129271559</b>
-    </p>
+# Lost Cars Listing Website
 
-    <!-- Login Section -->
-    <div id="loginSection">
-      <hr>
-      <h2 style="text-align:center;color:#444;font-size:1.1em;">لوحة التحكم (للمتحكم فقط)</h2>
-      <input type="password" id="adminPass" placeholder="كلمة المرور">
-      <button onclick="loginAdmin()">دخول</button>
-      <div class="msg" id="loginMsg"></div>
-    </div>
+A mobile-first web platform to help list and search for lost cars using license plate or chassis numbers.  
+**Admin-controlled:** Only you (the admin) can upload, edit, or remove listings, upload car images, and manage contact information.  
+**Privacy-first:** Sensitive details and images are kept private, and your contact number is only revealed if a car is found.
 
-    <!-- Admin Panel -->
-    <div id="adminPanel" class="admin-panel hidden">
-      <button class="logout-btn" onclick="logout()">خروج</button>
-      <h3 style="color:#1e90ff;margin-bottom:0;">إضافة سيارة جديدة</h3>
-      <form id="addCarForm" enctype="multipart/form-data">
-        <label>رقم اللوحة</label>
-        <input type="text" id="addPlate" required>
-        <label>رقم الشاسيه</label>
-        <input type="text" id="addChassis" required>
-        <label>صور السيارة (يمكن رفع أكثر من صورة)</label>
-        <input type="file" id="addImages" accept="image/*" multiple>
-        <button type="submit">إضافة</button>
-      </form>
-      <div class="msg" id="addMsg"></div>
-      <div class="stat" id="stat"></div>
-      <div class="car-list" id="carList"></div>
-    </div>
-  </div>
-  <script>
-    // ------------------ بيانات السيارات في LocalStorage ------------------
-    function getCars() {
-      return JSON.parse(localStorage.getItem('lost_cars') || '[]');
-    }
-    function setCars(cars) {
-      localStorage.setItem('lost_cars', JSON.stringify(cars));
-    }
+## Features
 
-    // ------------- البحث عن السيارة -------------
-    document.getElementById('searchForm').onsubmit = function(e) {
-      e.preventDefault();
-      const plate = document.getElementById('plate').value.trim();
-      const chassis = document.getElementById('chassis').value.trim();
-      const cars = getCars();
-      const found = cars.find(car =>
-        (plate && car.plate.toLowerCase() === plate.toLowerCase()) ||
-        (chassis && car.chassis.toLowerCase() === chassis.toLowerCase())
-      );
-      const resultDiv = document.getElementById('result');
-      if (found) {
-        let imgs = (found.images||[]).map(src=>`<img src="${src}" class="car-img">`).join('');
-        resultDiv.innerHTML = `${imgs}<br>🚗 السيارة موجودة! تواصل مع الرقم: <b>0129271559</b>`;
-        resultDiv.className = "result found";
-      } else {
-        resultDiv.innerHTML = "❌ لم يتم العثور على السيارة.";
-        resultDiv.className = "result notfound";
-      }
-    };
+- **Add Lost Cars** (Admin-only): Upload car details and images.
+- **Public Search:** Anyone can search for a car by license plate or chassis number.
+- **Private Images/Contacts:** Only admin can view/edit images and sensitive info.
+- **Contact Workflow:** If a car is found, user submits a form, admin verifies, then shares contact number.
+- **Mobile-Friendly:** Optimized UI for use on any phone.
 
-    // ------------- الدخول للوحة التحكم -------------
-    function loginAdmin() {
-      const pass = document.getElementById('adminPass').value;
-      if (pass === "Ahmed6261@") {
-        document.getElementById('adminPanel').classList.remove('hidden');
-        document.getElementById('loginSection').classList.add('hidden');
-        showCars();
-      } else {
-        document.getElementById('loginMsg').innerText = 'كلمة المرور غير صحيحة';
-      }
-    }
-    function logout() {
-      document.getElementById('adminPanel').classList.add('hidden');
-      document.getElementById('loginSection').classList.remove('hidden');
-      document.getElementById('adminPass').value = '';
-      document.getElementById('loginMsg').innerText = '';
-    }
+## Tech Stack
 
-    // ------------- إضافة سيارة جديدة -------------
-    document.getElementById('addCarForm').onsubmit = function(e) {
-      e.preventDefault();
-      const plate = document.getElementById('addPlate').value.trim();
-      const chassis = document.getElementById('addChassis').value.trim();
-      const imagesInput = document.getElementById('addImages');
-      if (!plate || !chassis) return;
-      const cars = getCars();
-      if (cars.some(car => car.plate.toLowerCase() === plate.toLowerCase() || car.chassis.toLowerCase() === chassis.toLowerCase())) {
-        document.getElementById('addMsg').innerText = "🚫 السيارة مسجلة بالفعل!";
-        return;
-      }
+- **Frontend:** React + Tailwind CSS (for fast, responsive mobile UI)
+- **Backend (suggested):** Firebase, Supabase, or similar (not included in this starter)
+- **Hosting:** Vercel, Netlify, or GitHub Pages
+- **Version Control:** GitHub
 
-      // قراءة الصور (Base64)
-      const files = Array.from(imagesInput.files);
-      if (files.length > 5) {
-        document.getElementById('addMsg').innerText = "🚫 يمكن رفع حتى 5 صور كحد أقصى!";
-        return;
-      }
-      let imgPromises = files.map(file => {
-        return new Promise(res => {
-          const reader = new FileReader();
-          reader.onload = e => res(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      });
-      Promise.all(imgPromises).then(imgs => {
-        cars.push({ plate, chassis, images: imgs });
-        setCars(cars);
-        showCars();
-        document.getElementById('addMsg').innerText = "✅ تم إضافة السيارة بنجاح!";
-        document.getElementById('addCarForm').reset();
-        setTimeout(()=>{ document.getElementById('addMsg').innerText = ''; }, 1400);
-      });
-    };
+## Getting Started
 
-    // ------------- عرض قائمة السيارات وإحصائيات -------------
-    function showCars() {
-      const cars = getCars();
-      document.getElementById('stat').innerText = `عدد السيارات المسجلة: ${cars.length}`;
-      let list = '';
-      cars.forEach((car, i) => {
-        let imgs = (car.images||[]).map(src=>`<img src="${src}" class="car-img">`).join('');
-        list += `<div class="car-item">
-          <div class="car-info">
-            <b>لوحة:</b> ${car.plate} <br>
-            <b>شاسيه:</b> ${car.chassis} <br>${imgs}
-          </div>
-          <div class="actions">
-            <button onclick="delCar(${i})" style="background:#e74c3c;">حذف</button>
-          </div>
-        </div>`;
-      });
-      document.getElementById('carList').innerHTML = list || "<div style='color:#888;'>لا توجد سيارات بعد.</div>";
-    }
+1. **Clone this repo**
+2. `npm install`
+3. `npm start` (or use your favorite mobile-friendly IDE or deploy directly)
+4. Begin customizing!
 
-    // ------------- حذف سيارة -------------
-    function delCar(idx) {
-      if (!confirm('هل أنت متأكد من حذف السيارة؟')) return;
-      const cars = getCars();
-      cars.splice(idx, 1);
-      setCars(cars);
-      showCars();
-    }
+## Folder Structure
 
-    // ------------- تحسينات: الإدخال السريع بالإنتر وزيادة الأمان بالواجهة -------------
-    document.getElementById('adminPass').addEventListener('keydown', e => { if(e.key==='Enter') loginAdmin(); });
+```
+src/
+  components/
+    AdminPanel.js
+    CarForm.js
+    CarList.js
+    SearchBar.js
+    CarDetails.js
+  pages/
+    Home.js
+    Admin.js
+  App.js
+  index.js
+public/
+  index.html
+README.md
+```
 
-    // ------------- إظهار السيارات عند تسجيل الدخول -------------
-    window.delCar = delCar;
-  </script>
-</body>
-</html>
+## Admin Workflow
+
+1. Log in as admin.
+2. Add new lost car details, upload images (private).
+3. Listings appear in search (public does NOT see images or contact).
+4. When a user claims to have found a car, they send a form → admin verifies → shares contact if confirmed.
+
+## License
+
+MIT
+
+---
